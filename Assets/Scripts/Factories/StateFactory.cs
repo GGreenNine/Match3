@@ -16,7 +16,7 @@ namespace Factories
         {
             var board = GenerateBoard(_coreSettings.boardSizeX, _coreSettings.boardSizeY);
             var colorsMap = colorGenerator.GenerateMap(_coreSettings.boardSizeX, _coreSettings.boardSizeY);
-            return new State(board, colorsMap, 0);
+            return new State(board, colorsMap);
         }
         
         private TileData[,] GenerateBoard(int x, int y)

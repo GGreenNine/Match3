@@ -4,13 +4,11 @@
     {
         public TileData[,] Board { get; }
         public int[,] ColorsMap { get; }
-        public int P { get; }
 
-        public State(TileData[,] board, int[,] colorsMap, int p)
+        public State(TileData[,] board, int[,] colorsMap)
         {
             Board = board;
             ColorsMap = colorsMap;
-            P = p;
         }
 
         public State DeepCopy()
@@ -27,7 +25,7 @@
                 }
             }
 
-            return new State(newBoard, newColorsMap, P);
+            return new State(newBoard, newColorsMap);
         }
     }
 }
