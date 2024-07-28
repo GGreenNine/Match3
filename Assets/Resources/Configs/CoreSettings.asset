@@ -17,4 +17,4 @@ MonoBehaviour:
   boardSizeY: 10
   minMatchesRequirement: 3
   targetScore: 500
-  targetTime: 3
+  targetTime: 500
