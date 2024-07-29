@@ -12,6 +12,8 @@ using Zenject;
 
 public class MatchThreeGrid : MonoBehaviour
 {
+    [SerializeField] private GameObject _interactionBlockScreen;
+
     private State InitialState;
     private Dictionary<TileData, TileControl> _tileControls = new();
     private readonly List<TileData> _selectedTiles = new();
@@ -133,6 +135,7 @@ public class MatchThreeGrid : MonoBehaviour
     private IEnumerator UpdateBoardCoroutine(IEnumerable<IBoardAction> boardActions)
     {
         _globalTimer.StopTime();
+        _interactionBlockScreen.gameObject.SetActive(true);
         foreach (var action in boardActions)
         {
             UpdateBoard(action.ModifiedState);
@@ -140,6 +143,7 @@ public class MatchThreeGrid : MonoBehaviour
         }
 
         UpdateScore();
+        _interactionBlockScreen.gameObject.SetActive(false);
         _globalTimer.Continue();
     }
 

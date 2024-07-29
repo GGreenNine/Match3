@@ -20,7 +20,6 @@ namespace UI
         [SerializeField] private Button _exitButton;
         [SerializeField] private TextMeshProUGUI _totalScore;
         [SerializeField] private TextMeshProUGUI _timeLeft;
-        [SerializeField] private GameObject _interactionBlockScreen;
         
         private IGameStateController _gameStateController;
         private IGameScore _gameScore;
@@ -79,16 +78,13 @@ namespace UI
                 case GameStateType.StartScren:
                     _resultScreen.SetActive(false);
                     _startScreen.SetActive(true);
-                    _interactionBlockScreen.gameObject.SetActive(false);
                     break;
                 case GameStateType.ResultScreen:
                     UpdateResultText();
                     _resultScreen.SetActive(true);
                     _startScreen.SetActive(false);
-                    _interactionBlockScreen.gameObject.SetActive(false);
                     break;
                 case GameStateType.Gameplay:
-                    _interactionBlockScreen.gameObject.SetActive(false);
                     _resultScreen.SetActive(false);
                     _startScreen.SetActive(false);
                     break;
