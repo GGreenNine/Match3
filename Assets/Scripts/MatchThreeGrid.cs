@@ -1,11 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using BoardActions;
 using Data;
+using Dejkstra;
 using Exceptions;
 using Factories;
 using Game;
 using GameState;
+using Loaders;
+using QFSW.QC;
 using SwapM3;
 using UnityEngine;
 using Zenject;
@@ -31,22 +35,40 @@ public class MatchThreeGrid : MonoBehaviour
         _gridFactory = gridFactory;
         _stateFactory = stateFactory;
         _gameStateController = gameStateController;
-        _matchThreeExecutor = new BoardDefaultSwapM3Executor(gameScore);
+        _matchThreeExecutor = new BoardDefaultSwapM3Executor();
         _gameScore = gameScore;
         _globalTimer = globalTimer;
     }
 
-    private void Awake()
+    [Command]
+    public void Solve(int targetPoints)
     {
-        _gameStateController.OnStateUpdated += OnStateUpdated;
+        var dejkstraSolver = new DejkstraSolver(_gameScore);
+        var solvedState = dejkstraSolver.Solve(in InitialState, targetPoints, out var actionsTakenStack);
+        StartCoroutine(UpdateBoardCoroutine(actionsTakenStack));
+    }
+
+    [Command]
+    private void SaveState()
+    {
+        StateSaveLoader stateSaveLoader = new();
+        stateSaveLoader.SaveState(in InitialState);
+    }
+
+    [Command]
+    private void LoadState()
+    {
+        GenerateBoard();
+        StateSaveLoader stateSaveLoader = new();
+        var loadedState = stateSaveLoader.LoadState();
+        UpdateBoard(loadedState);
     }
 
     private void OnStateUpdated(IGameState newState)
     {
         if (newState._gameStateType == GameStateType.Gameplay)
         {
-            InitialState = _stateFactory.Create(new ColorsMapRandomGeneration());
-            _tileControls = _gridFactory.Create(InitialState, transform, TileClickHandler, TileDraggHandler);
+            GenerateBoard();
         }
 
         if (newState._gameStateType == GameStateType.ResultScreen)
@@ -55,6 +77,15 @@ public class MatchThreeGrid : MonoBehaviour
         }
     }
 
+    [Command]
+    private void GenerateBoard()
+    {
+        ClearBoard();
+        InitialState = _stateFactory.Create(new ColorsMapGeneration());
+        _tileControls = _gridFactory.Create(InitialState, transform, TileClickHandler, TileDraggHandler);
+    }
+
+    [Command]
     private void ClearBoard()
     {
         InitialState = default;
@@ -64,7 +95,7 @@ public class MatchThreeGrid : MonoBehaviour
         }
         _tileControls.Clear();
         _selectedTiles.Clear();
-        _matchThreeExecutor = new BoardDefaultSwapM3Executor(_gameScore);
+        _matchThreeExecutor = new BoardDefaultSwapM3Executor();
     }
         
     private void TileClickHandler(TileControl tileControl)
@@ -80,7 +111,7 @@ public class MatchThreeGrid : MonoBehaviour
     {
         try
         {
-            var boardActions = _matchThreeExecutor.SwapExecute(InitialState, _selectedTiles);
+            var boardActions = _matchThreeExecutor.SwapExecute(InitialState, _selectedTiles.ToArray());
             StartCoroutine(UpdateBoardCoroutine(boardActions));
         }
         catch (SwapIsNotLegalException e)
@@ -120,6 +151,7 @@ public class MatchThreeGrid : MonoBehaviour
 
     private void UpdateBoard(State state)
     {
+        InitialState = state;
         foreach (var tile in state.Board)
         {
             _tileControls.TryGetValue(tile, out var control);
@@ -138,14 +170,26 @@ public class MatchThreeGrid : MonoBehaviour
         _interactionBlockScreen.gameObject.SetActive(true);
         foreach (var action in boardActions)
         {
+            if (action is AddTilesScoreAction)
+            {
+                _gameScore.AddScore(action.ModifiedState.Points);
+            }
             UpdateBoard(action.ModifiedState);
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(0.3f);
         }
 
-        UpdateScore();
         _interactionBlockScreen.gameObject.SetActive(false);
         _globalTimer.Continue();
     }
+    private IEnumerator UpdateBoardCoroutine(Stack<IEnumerable<IBoardAction>> boardActions)
+    {
+        while (boardActions.Count > 0)
+        {
+            var nextBoardStateActions = boardActions.Pop();
+            yield return UpdateBoardCoroutine(nextBoardStateActions);
+        }
+    }
+    
 
 
     private void UpdateScore()

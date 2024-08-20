@@ -5,12 +5,14 @@ using Data;
 
 public static class StateExtensions
 {
-    public static bool IsSwapLegal(this State state, List<TileData> tilesForSwap)
+    public static bool IsSwapLegal(this State state, TileData[] tilesForSwap)
     {
         var swapAction = new SwapTilesAction();
         var findMatchesAction = new FindMatchesAction();
+        var areSameColors = state.ColorsMap[tilesForSwap[0].X, tilesForSwap[0].Y] ==
+                            state.ColorsMap[tilesForSwap[1].X, tilesForSwap[1].Y];
         
-        if (tilesForSwap.Count != 2 || !tilesForSwap[0].TileIsAdjacentTo(tilesForSwap[1]))
+        if (tilesForSwap.Length != 2 || !tilesForSwap[0].TileIsAdjacentTo(tilesForSwap[1]) || areSameColors)
         {
             return false;
         }
@@ -21,7 +23,7 @@ public static class StateExtensions
         var legalActions = findMatchesAction.FindMatches(ref tempState, new List<TileData>() {tilesForSwap[0], tilesForSwap[1]}, processedTiles);
         return legalActions.Count > 0;
     }
-    
+
     public static bool ColorsMatch(this State state, TileData current, TileData target)
     {
         if (current.X > state.ColorsMap.GetLength(0) || current.Y > state.ColorsMap.GetLength(1) ||

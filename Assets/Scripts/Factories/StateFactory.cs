@@ -1,4 +1,6 @@
-﻿using Data;
+﻿using System;
+using BoardActions;
+using Data;
 using Zenject;
 
 namespace Factories
@@ -14,9 +16,11 @@ namespace Factories
 
         public State Create(IMapColorGenerator colorGenerator)
         {
+            int seed = 2355213;
+            var generateColorsAction = new GenerateColorsAction();
             var board = GenerateBoard(_coreSettings.boardSizeX, _coreSettings.boardSizeY);
-            var colorsMap = colorGenerator.GenerateMap(_coreSettings.boardSizeX, _coreSettings.boardSizeY);
-            return new State(board, colorsMap);
+            var colorsMap = generateColorsAction.GenerateColorsBoard(_coreSettings.boardSizeX, _coreSettings.boardSizeY, seed);
+            return new State(board, colorsMap, 0, 0, 0, Guid.NewGuid());
         }
         
         private TileData[,] GenerateBoard(int x, int y)

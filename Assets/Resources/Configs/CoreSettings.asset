@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: CoreSettings
   m_EditorClassIdentifier: 
   tilesSpace: 50
-  boardSizeX: 10
-  boardSizeY: 10
+  boardSizeX: 5
+  boardSizeY: 5
   minMatchesRequirement: 3
   targetScore: 500
   targetTime: 500

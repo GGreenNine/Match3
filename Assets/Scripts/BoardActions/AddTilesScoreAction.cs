@@ -9,9 +9,9 @@ namespace BoardActions
         public State ModifiedState => modifiedState;
         private State modifiedState;
 
-        public void AddScore(ref State state, IReadOnlyList<TileData> matches, IGameScore gameScore)
+        public void AddScore(ref State state, IReadOnlyList<TileData> matches)
         {
-            gameScore.ScoreTempReactiveProperty.Value = matches.Count;
+            state.SetPoints(matches.Count);
             modifiedState = state.DeepCopy();
         }
     }

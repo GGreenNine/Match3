@@ -13,7 +13,7 @@ namespace BoardActions
         {
             modifiedState = state;
             Queue<TileData> tilesToProcessQueue = new Queue<TileData>();
-            List<TileData> matches = new();
+            HashSet<TileData> matches = new();
             foreach (var tileData in tileDataList)
             {
                 tilesToProcessQueue.Enqueue(tileData);
@@ -45,10 +45,10 @@ namespace BoardActions
                 return new List<TileData>();
             }
         
-            return matches;
+            return matches.ToList();
         }
 
-        private void EnqueueMatches(List<TileData> foundMatches, List<TileData> matches, Queue<TileData> filesToProcess)
+        private void EnqueueMatches(List<TileData> foundMatches, HashSet<TileData> matches, Queue<TileData> filesToProcess)
         {
             foreach (var match in foundMatches)
             {

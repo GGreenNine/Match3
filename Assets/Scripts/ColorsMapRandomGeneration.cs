@@ -1,32 +1,18 @@
-﻿using UnityEngine;
+﻿using BoardActions;
+using Data;
+using UnityEngine;
 
-public class ColorsMapRandomGeneration : IMapColorGenerator
+public class ColorsMapGeneration : IMapColorGenerator
 {
-    public int[,] GenerateMap(int x, int y)
+    public int[,] GenerateMap(ref State state, int seed)
     {
-        var colorsMap = new int[x, y];
-
-        for (int i = 0; i < x; i++)
-        {
-            for (int j = 0; j < y; j++)
-            {
-                var randomIndex = GetRandomColor();
-                colorsMap[i, j] = randomIndex;
-            }
-        }
-
-        return colorsMap;
-    }
-
-    public static int GetRandomColor()
-    {
-        var colorsAmount = ColorsMapDefinitions._colorDefinitions.Count;
-        var randomIndex = Random.Range(0, colorsAmount - 1);
-        return randomIndex;
+        ReplaceTilesByLinesDeterministicAction generateTilesAction = new(seed);
+        generateTilesAction.ReplaceEmptyTiles(ref state);
+        return generateTilesAction.ModifiedState.ColorsMap;
     }
 }
 
 public interface IMapColorGenerator
 {
-    public int[,] GenerateMap(int x, int y);
+    public int[,] GenerateMap(ref State state, int seed);
 }

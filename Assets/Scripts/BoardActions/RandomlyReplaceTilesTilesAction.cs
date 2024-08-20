@@ -2,7 +2,7 @@
 
 namespace BoardActions
 {
-    public class ReplaceEmptyTilesAction : IBoardAction
+    public class RandomlyReplaceTilesTilesAction : IBoardAction
     {
         public State ModifiedState => modifiedState;
         private State modifiedState;
@@ -17,7 +17,7 @@ namespace BoardActions
                     var isTileEmpty = state.ColorsMap[tile.X, tile.Y] == -1;
                     if (isTileEmpty)
                     {
-                        state.ColorsMap[i, j] = ColorsMapRandomGeneration.GetRandomColor();
+                        // state.ColorsMap[i, j] = ColorsMapRandomGeneration.GetRandomColor(1);
                     }
                 }
             }
