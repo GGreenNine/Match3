@@ -5,6 +5,7 @@ using Data;
 using Exceptions;
 using Game;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace SwapM3
 {
@@ -13,6 +14,7 @@ namespace SwapM3
         private int seed = 23351257;
         public IEnumerable<IBoardAction> SwapExecute(State state, TileData[] tilesForSwap)
         {
+            Profiler.BeginSample("SwapExecute");
             if (!state.IsSwapLegal(tilesForSwap))
             {
                 throw new SwapIsNotLegalException();
@@ -35,14 +37,14 @@ namespace SwapM3
                 }
 
                 var removesTilesAction = new RemoveTilesAction();
-                Debug.Log($"Removing {tilesToProceed.Count} tiles");
                 removesTilesAction.RemoveMatches(ref state, tilesToProceed);
                 yield return removesTilesAction;
                 
                 var dropTilesAction = new DropTilesAction();
-                if (dropTilesAction.DropTiles(ref state))
+                if (dropTilesAction.DropTiles(ref state, out var droppedTiles))
                 {
                     processedTiles.Clear();
+                    tilesToProceed.AddRange(droppedTiles);
                     yield return dropTilesAction;
                 }
                 
@@ -51,9 +53,10 @@ namespace SwapM3
                 yield return addScoreAction;
             }
 
-            var _replaceEmptyTilesAction = new ReplaceTilesByLinesDeterministicAction(seed);
+            var _replaceEmptyTilesAction = new ReplaceTilesByLinesDtAction(seed);
             _replaceEmptyTilesAction.ReplaceEmptyTiles(ref state);
             yield return _replaceEmptyTilesAction;
+            Profiler.EndSample();
         }
     }
 }

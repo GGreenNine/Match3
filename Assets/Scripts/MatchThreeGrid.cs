@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using BoardActions;
+using Cysharp.Threading.Tasks;
 using Data;
 using Dejkstra;
 using Exceptions;
@@ -11,6 +13,7 @@ using GameState;
 using Loaders;
 using QFSW.QC;
 using SwapM3;
+using UnityEditor;
 using UnityEngine;
 using Zenject;
 
@@ -25,28 +28,43 @@ public class MatchThreeGrid : MonoBehaviour
 
     private GridFactory _gridFactory;
     private StateFactory _stateFactory;
-    private IGameStateController _gameStateController;
     private IGameScore _gameScore;
     private GameGlobalTimer _globalTimer;
         
     [Inject]
-    private void SetDependencies(GridFactory gridFactory, StateFactory stateFactory, IGameScore gameScore, IGameStateController gameStateController, GameGlobalTimer globalTimer)
+    private void SetDependencies(GridFactory gridFactory, StateFactory stateFactory, IGameScore gameScore, GameGlobalTimer globalTimer)
     {
         _gridFactory = gridFactory;
         _stateFactory = stateFactory;
-        _gameStateController = gameStateController;
         _matchThreeExecutor = new BoardDefaultSwapM3Executor();
         _gameScore = gameScore;
         _globalTimer = globalTimer;
     }
 
     [Command]
+    public async UniTaskVoid SolveAsync(int targetPoints)
+    {
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        var actions= await UniTask.RunOnThreadPool(() =>
+        {
+            var dejkstraSolver = new DejkstraSolver();
+            dejkstraSolver.Solve(in InitialState, targetPoints, out var actionsTakenStack) ;
+            return actionsTakenStack;
+        }, cancellationToken: cts.Token); 
+        StartCoroutine(UpdateBoardCoroutine(actions));
+    }
+    
+    
+    [Command]
     public void Solve(int targetPoints)
     {
-        var dejkstraSolver = new DejkstraSolver(_gameScore);
-        var solvedState = dejkstraSolver.Solve(in InitialState, targetPoints, out var actionsTakenStack);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+        var dejkstraSolver = new DejkstraSolver();
+        dejkstraSolver.Solve(in InitialState, targetPoints, out var actionsTakenStack) ;
+        EditorApplication.isPaused = true;
         StartCoroutine(UpdateBoardCoroutine(actionsTakenStack));
     }
+
 
     [Command]
     private void SaveState()

@@ -8,7 +8,9 @@ public static class ColorsMapDefinitions
         {-1, Color.clear},
         {0, Color.red},
         {1, Color.blue},
-        {2, Color.green}
+        {2, Color.green},
+        {3, Color.yellow},
+        {4, Color.cyan}
     };
 
     public static Color GetColor(int index)

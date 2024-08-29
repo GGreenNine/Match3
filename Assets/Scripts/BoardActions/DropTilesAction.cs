@@ -8,9 +8,10 @@ namespace BoardActions
         public State ModifiedState => modifiedState;
         private State modifiedState;
         
-        public bool DropTiles(ref State state)
+        public bool DropTiles(ref State state, out List<TileData> tiles)
         {
-            bool tilesDropped = false;
+            bool tilesWereDropped = false;
+            List<TileData> droppedTiles = new List<TileData>();
             for (int x = 0; x < state.Board.GetLength(0); x++)
             {
                 Queue<int> emptyTilesQueue = new();
@@ -26,14 +27,16 @@ namespace BoardActions
                         var emptyTileIndex = emptyTilesQueue.Dequeue();
                         state.ColorsMap[x, emptyTileIndex] = state.ColorsMap[x, y];
                         state.ColorsMap[x, y] = -1;
+                        droppedTiles.Add(state.Board[x, emptyTileIndex]);
                         emptyTilesQueue.Enqueue(y);
-                        tilesDropped = true;
+                        tilesWereDropped = true;
                     }
                 }
             }
 
             modifiedState = state.DeepCopy();
-            return tilesDropped;
+            tiles = droppedTiles;
+            return tilesWereDropped;
         }
 
     }

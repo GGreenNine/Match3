@@ -7,7 +7,7 @@ namespace BoardActions
         public int[,] GenerateColorsBoard(int x, int y, int seed)
         {
             int[,] colorsMap = CreateEmptyBoard(x, y);
-            ReplaceTilesByLinesDeterministicAction replaceTilesAction = new(seed);
+            ReplaceTilesByLinesDtAction replaceTilesAction = new(seed);
             replaceTilesAction.ReplaceEmptyTiles(colorsMap);
             return colorsMap;
         }

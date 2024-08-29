@@ -6,40 +6,37 @@ using Data;
 using Game;
 using SwapM3;
 using UnityEngine;
+using Utils;
 
 namespace Dejkstra
 {
     public class DejkstraSolver
     {
-        private IGameScore _gameScore;
-
-        private SortedSet<State> _statesPriorityByCost = new();
+        private PriorityQueue<State, StateWieghtPriorityComparer> _statesPriorityByCost = new();
         private HashSet<State> _visitedStates = new();
         private BoardDefaultSwapM3Executor _defaultSwapM3Executor;
         private Dictionary<State, (State, IEnumerable<IBoardAction>)> _parents = new();
+        private StateWieghtPriorityComparer _comparer = new();
 
-
-        public DejkstraSolver(IGameScore gameScore)
+        public DejkstraSolver()
         {
-            _gameScore = gameScore;
             _defaultSwapM3Executor = new();
         }
 
         public State Solve(in State startState, int targetP, out Stack<IEnumerable<IBoardAction>> actionsTakenStack)
         {
             var stateStartCopy = startState.DeepCopy();
-            _statesPriorityByCost.Add(stateStartCopy);
+            _statesPriorityByCost.Enqueue(stateStartCopy, _comparer);
             _parents.Add(startState, (default, null));
             
             while (_statesPriorityByCost.Count > 0)
             {
-                var proceedState = _statesPriorityByCost.First(); //first() returns min value
+                var proceedState = _statesPriorityByCost.Dequeue(); //first() returns min value
                 if (!_visitedStates.Add(proceedState))
                 {
                     continue;
                 }
 
-                _statesPriorityByCost.Remove(proceedState);
                 _visitedStates.Add(proceedState);
 
                 if (proceedState.CumulativePoints >= targetP)
@@ -62,10 +59,10 @@ namespace Dejkstra
                     // If the priority queue doesn’t contain the next state,
                     // or if it contains the next state at a higher cost, then add
                     // it to the priority queue.
-                    var found = _statesPriorityByCost.TryGetValue(possibleNextState, out var foundState);
+                    var found = _visitedStates.TryGetValue(possibleNextState, out var foundState);
                     if (!found || foundState.EdgeWeight > possibleNextState.EdgeWeight)
                     {
-                        _statesPriorityByCost.Add(possibleNextState);
+                        _statesPriorityByCost.Enqueue(possibleNextState, _comparer);
                         _parents.Add(possibleNextState, (proceedState, actionsTaken));
                     }
                 }

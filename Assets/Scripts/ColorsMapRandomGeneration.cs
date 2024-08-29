@@ -6,7 +6,7 @@ public class ColorsMapGeneration : IMapColorGenerator
 {
     public int[,] GenerateMap(ref State state, int seed)
     {
-        ReplaceTilesByLinesDeterministicAction generateTilesAction = new(seed);
+        ReplaceTilesByLinesDtAction generateTilesAction = new(seed);
         generateTilesAction.ReplaceEmptyTiles(ref state);
         return generateTilesAction.ModifiedState.ColorsMap;
     }
